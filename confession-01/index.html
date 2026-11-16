@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8efeb">
+  <meta name="description" content="မင်းကို ပြောချင်နေတာ ကြာပြီဖြစ်တဲ့ စကားလေးတစ်ခွန်း။">
+  <title>မင်းအတွက် စာလေးတစ်စောင်</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="template.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <div class="twinkles" aria-hidden="true">
+    <span>✦</span><span>♡</span><span>✧</span><span>♥</span>
+    <span>✦</span><span>♡</span><span>✧</span><span>♥</span>
+  </div>
+  <div class="heart-fireworks" id="heart-fireworks" aria-hidden="true"></div>
+
+  <main class="stationery">
+    <section class="invitation" id="invitation" aria-labelledby="invitation-title">
+      <div class="heading">
+        <h1 id="invitation-title" tabindex="-1"><span class="heading-star" aria-hidden="true">✦</span> စာလေးတစ်စောင်ရောက်နေပါတယ် <span class="heading-star" aria-hidden="true">✦</span></h1>
+      </div>
+
+      <button class="envelope-stage" id="envelope-stage" type="button" aria-label="စာလေး ဖွင့်ဖတ်မယ်">
+        <span class="sparkle sparkle-left" aria-hidden="true">✧</span>
+        <span class="sparkle sparkle-bottom" aria-hidden="true">♡</span>
+        <span class="envelope" aria-hidden="true">
+          <span class="mail-notice">1</span>
+          <span class="envelope-face envelope-front">
+            <span class="envelope-lining"></span>
+            <span class="paper-peek"><span>♡</span></span>
+            <span class="envelope-pocket"></span>
+            <span class="envelope-flap"></span>
+            <span class="wax-seal"><span>♥</span></span>
+          </span>
+        </span>
+      </button>
+
+      <noscript><p>စာလေးဖွင့်ဖတ်ဖို့ JavaScript ကို ဖွင့်ထားပေးပါနော်။</p></noscript>
+    </section>
+
+    <section class="letter-view" id="letter-view" aria-labelledby="letter-title" hidden>
+      <article class="letter">
+        <div class="letter-ornament" aria-hidden="true">✦ <span>♡</span> ✦</div>
+        <h1 id="letter-title" tabindex="-1" lang="en">Dear Hnin,</h1>
+        <div class="letter-message">
+          <p>မင်းနဲ့ စကားပြောရတဲ့နေ့ဆို အိမ်ပြန်ရောက်တဲ့အထိ ပြုံးနေမိတတ်တယ်။ ဖုန်းမှာ မင်းနာမည်လေး ပေါ်လာရင်လည်း ကိုယ် အလိုလို ပြုံးမိပြန်ရော။</p>
+          <p>လူချင်းတွေ့ရင် ပြောမယ်လို့ စိတ်ကူးထားတာ။ မင်းရှေ့ရောက်တော့ ပြောမယ့်စကားတွေ မေ့သွားလို့ ဒီစာလေး ရေးလိုက်တာပါ။</p>
+          <p class="confession">ကိုယ် မင်းကို တကယ် သဘောကျတယ်။ <span aria-hidden="true">♥</span></p>
+        </div>
+        <picture class="letter-sticker">
+          <source media="(prefers-reduced-motion: reduce)" srcset="assets/goma-flower-still.webp">
+          <img src="assets/goma-flower.gif" width="160" height="160" alt="ပန်းလေးပေးနေတဲ့ Goma">
+        </picture>
+        <p class="letter-question" id="letter-question" aria-live="polite">မင်းရော ဘယ်လိုခံစားရလဲ။</p>
+        <div class="choices reply-choices">
+          <button class="button primary" type="button" id="accept-letter">လက်ခံတယ် <span aria-hidden="true">♡</span></button>
+          <div class="decline-slot" id="decline-slot">
+            <button class="button secondary" type="button" id="decline-letter">ငြင်းတယ်</button>
+          </div>
+        </div>
+      </article>
+      <button class="button secondary close-letter" type="button" id="close-letter"><span aria-hidden="true">↶</span> စာအိတ်ဆီ ပြန်သွားမယ်</button>
+    </section>
+
+    <section class="letter-view answer-view" id="declined-view" aria-labelledby="declined-title" hidden>
+      <article class="letter">
+        <div class="letter-ornament" aria-hidden="true">✦ ♡ ✦</div>
+        <h1 id="declined-title" tabindex="-1">ရပါတယ်နော်</h1>
+        <p>ဒီစာလေး ဖတ်ပေးလို့ ကျေးဇူးတင်ပါတယ်။ ကိုယ် မင်းရဲ့ အဖြေကို လေးစားပါတယ်။</p>
+      </article>
+      <button class="button secondary close-letter" type="button" id="declined-return"><span aria-hidden="true">↶</span> စာအိတ်ဆီ ပြန်သွားမယ်</button>
+    </section>
+
+    <section class="keepsake" id="keepsake" aria-labelledby="keepsake-title" hidden>
+      <header class="keepsake-header">
+        <div class="letter-ornament" aria-hidden="true">✦ <span>♡</span> ✦</div>
+        <h1 id="keepsake-title" tabindex="-1"><span id="keepsake-name">Hnin</span> နဲ့ ကိုယ်</h1>
+        <p>ဒီနေ့ကစပြီး အမှတ်တရလေးတွေ အတူတူ သိမ်းထားကြမယ်နော်။</p>
+      </header>
+      <div class="photo-strip" id="photo-strip" aria-label="အမှတ်တရ ဓာတ်ပုံသုံးပုံ"></div>
+      <div class="keepsake-details">
+        <section class="reason-card" aria-labelledby="reasons-title">
+          <h2 id="reasons-title">မင်းကို သဘောကျရတဲ့ အချက် ၅ ချက်</h2>
+          <ol id="reason-list"></ol>
+        </section>
+        <section class="music-card" aria-labelledby="music-title">
+          <h2 id="music-title">တို့နှစ်ယောက်ရဲ့ သီချင်းများ</h2>
+          <div class="record" id="record" aria-hidden="true">
+            <div class="record-label"><span>♥</span><img id="record-cover" alt="" hidden></div>
+          </div>
+          <details class="song-dropdown" id="song-dropdown">
+            <summary class="song-option" aria-label="သီချင်းရွေးမယ်">
+              <span class="song-art" aria-hidden="true">♫<img id="selected-cover" alt="" hidden></span>
+              <span><strong id="selected-title"></strong><span class="song-artist" id="selected-artist"></span></span>
+              <span class="dropdown-chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <ul class="song-list" id="song-list" aria-label="သီချင်းရွေးမယ်"></ul>
+          </details>
+          <audio id="music-player" preload="metadata"></audio>
+          <div class="player-controls" role="group" aria-label="သီချင်းဖွင့်စက်">
+            <div class="transport">
+              <button class="player-button" type="button" id="previous-track" aria-label="အရင်သီချင်း"><span class="player-icon skip-back" aria-hidden="true"></span></button>
+              <button class="player-button play-button" type="button" id="play-track" aria-label="သီချင်းဖွင့်မယ်"><span class="player-icon play-icon" aria-hidden="true"></span></button>
+              <button class="player-button" type="button" id="next-track" aria-label="နောက်သီချင်း"><span class="player-icon skip-next" aria-hidden="true"></span></button>
+            </div>
+            <div class="player-timeline">
+              <span id="elapsed-time">0:00</span>
+              <input id="track-progress" type="range" min="0" max="0" step="0.1" value="0" aria-label="သီချင်းဖွင့်နေတဲ့ အချိန်" disabled>
+              <span id="track-duration">0:00</span>
+            </div>
+          </div>
+          <a class="music-link" id="music-link" target="_blank" rel="noopener" hidden>YouTube မှာ သီချင်းအပြည့် နားထောင်မယ် ↗</a>
+          <p class="music-error" id="music-error" role="status" hidden>ဒီသီချင်းကို ဖွင့်လို့မရသေးဘူး။ နောက်တစ်ပုဒ် ရွေးကြည့်ပါနော်။</p>
+        </section>
+      </div>
+      <button class="button secondary close-letter" type="button" id="back-to-letter"><span aria-hidden="true">↶</span> စာလေး ပြန်ဖတ်မယ်</button>
+    </section>
+  </main>
+</body>
+</html>
