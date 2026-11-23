@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080d23">
+  <title>တန်ဆောင်တိုင် — Lantern Letter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Classic deferred scripts work even when opened with file://. Order matters. -->
+  <script defer src="js/config.js"></script>
+  <script defer src="js/scene.js"></script>
+  <script defer src="js/lantern.js"></script>
+  <script defer src="js/torch.js"></script>
+  <script defer src="js/crowd.js"></script>
+  <script defer src="js/letter.js"></script>
+  <script defer src="js/celebration.js"></script>
+  <script defer src="js/main.js"></script>
+</head>
+<body>
+  <canvas id="world" role="img" aria-label="တန်ဆောင်တိုင် ညကောင်းကင်"></canvas>
+  <nav id="controls" hidden>
+    <button id="sound" type="button" aria-pressed="false"></button>
+  </nav>
+  <main id="overlay">
+    <p id="hint" hidden></p>
+    <p id="greeting" aria-live="polite" hidden></p>
+    <article id="letter" hidden></article>
+  </main>
+  <noscript>This lantern experience needs JavaScript enabled.</noscript>
+</body>
+</html>
