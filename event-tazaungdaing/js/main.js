@@ -13,19 +13,38 @@
  greeting.textContent=C.celebration.text;
  let lookTarget=scene.pitch,dragY=null;
  const tracks={match:null,crackle:null,wind:null};let soundEnabled=true;
- let music=null,musicStarted=false;
+ let music=null,musicStarted=false,musicContext=null,musicGain=null,musicSource=null;
+ function musicLevel(){
+  if(!music)return;
+  // Keep the media element audible to the browser; silence before contact at the audio graph.
+  const audible=musicStarted&&soundEnabled;
+  if(musicGain)musicGain.gain.value=audible?1:0;
+  else music.volume=audible?C.audio.musicVolume:0;
+ }
+ function unlockMusic(){
+  // Called directly by a pointer/key/click gesture, never only by the animation loop.
+  if(musicContext&&musicContext.state!=='running')musicContext.resume().catch(()=>{sound.title=strings.audioFailed;});
+ }
  function prepareMusic(){
-  if(music)return;
-  const track=music=new Audio(C.audio.music);track.preload='auto';track.volume=C.audio.musicVolume;track.muted=true;
-  const seek=()=>{if(Number.isFinite(track.duration)&&track.duration<=C.audio.musicStart){sound.title='Music file is shorter than 1:57';return;}track.currentTime=C.audio.musicStart;};
+  if(music){unlockMusic();return;}
+  const track=music=new Audio(C.audio.music);track.preload='auto';track.volume=C.audio.musicVolume;track.muted=false;
+  const AudioContext=window.AudioContext||window.webkitAudioContext;
+  if(AudioContext){
+   musicContext=musicContext||new AudioContext();musicSource=musicContext.createMediaElementSource(track);
+   musicGain=musicContext.createGain();musicGain.gain.value=0;
+   musicSource.connect(musicGain);musicGain.connect(musicContext.destination);
+  }
+  musicLevel();unlockMusic();
+  const seek=()=>{if(Number.isFinite(track.duration)&&track.duration<=C.audio.musicStart){sound.title='Music file is shorter than 1:57';return;}try{track.currentTime=C.audio.musicStart;}catch(error){/* Retry when contact occurs. */}};
   track.addEventListener('loadedmetadata',seek,{once:true});
-  // Unlock silently during the grab for mobile browsers; no song is heard before the flame touches the fuel.
-  track.play().then(()=>{if(music===track&&!musicStarted){track.pause();seek();}}).catch(()=>{});
+  track.addEventListener('error',()=>{sound.title=strings.audioFailed;});
+  // Leave playback running silently through the gain node until fuel contact.
+  track.play().catch(()=>{sound.title=strings.audioFailed;});
  }
  function startMusic(){
   if(musicStarted)return;prepareMusic();musicStarted=true;
   try{music.currentTime=C.audio.musicStart;}catch(error){/* Metadata callback performs the seek. */}
-  music.muted=!soundEnabled;music.play().catch(()=>{sound.title=strings.audioFailed;});
+  musicLevel();music.play().catch(()=>{sound.title=strings.audioFailed;});
  }
  function resumeMusic(){if(musicStarted&&music&&!music.ended)music.play().catch(()=>{});}
 
@@ -45,14 +64,22 @@
   if(!tracks[key]){tracks[key]=new Audio(C.audio[key]);tracks[key].loop=key!=='match';tracks[key].volume=.3;}
   tracks[key].play().catch(()=>{soundEnabled=false;stopAudio();sound.setAttribute('aria-pressed','false');sound.title=strings.audioFailed;});
  }
- sound.addEventListener('click',()=>{if(sound.disabled)return;soundEnabled=!soundEnabled;if(music)music.muted=!musicStarted||!soundEnabled;celebration.unlock();celebration.mute(!soundEnabled);sound.setAttribute('aria-pressed',String(soundEnabled));if(soundEnabled)playAudio(interactive()?'crackle':'wind');else stopAudio();});
+ sound.addEventListener('click',()=>{
+  if(sound.disabled)return;
+  // A blocked track needs a direct-gesture retry, not an accidental toggle to mute.
+  const blocked=musicStarted&&music&&(music.paused||musicContext&&musicContext.state!=='running');
+  soundEnabled=blocked?true:!soundEnabled;unlockMusic();musicLevel();
+  if(soundEnabled&&musicStarted){resumeMusic();sound.title='';}
+  celebration.unlock();celebration.mute(!soundEnabled);sound.setAttribute('aria-pressed',String(soundEnabled));
+  if(soundEnabled)playAudio(interactive()?'crackle':'wind');else stopAudio();
+ });
  function setLite(enabled){C.performance.manualLite=enabled;renderer.setLite(enabled);slowTime=0;}
  function closeLetter(){
   letter.close();world.startFormations();enter('EXPLORE');lookTarget=scene.pitch;state.focus=1;state.dim=0;
   hint.hidden=true;canvas.focus({preventScroll:true});
  }
  function reset(){
-  releaseInput();stopAudio();if(music){music.pause();music.removeAttribute('src');music.load();music=null;}musicStarted=false;letter.reset();celebration.reset();greeting.hidden=true;canvas.style.filter='';canvas.style.opacity='1';
+  releaseInput();stopAudio();if(music){music.pause();music.removeAttribute('src');music.load();music=null;}if(musicSource)musicSource.disconnect();if(musicGain)musicGain.disconnect();musicSource=musicGain=null;musicStarted=false;letter.reset();celebration.reset();greeting.hidden=true;canvas.style.filter='';canvas.style.opacity='1';
   scene.pitch=C.camera.startPitch*Math.PI/180;world=new app.Crowd(scene);torch=new app.Torch(scene);
   state.phase='IDLE';state.phaseTime=state.time=state.dim=0;state.focus=C.focus.idleSharpness;state.reduced=motion.matches;
   inactive=slowTime=lastTime=0;dragY=null;lookTarget=scene.pitch;hint.textContent=strings.lightHint;activity();controls.hidden=true;
@@ -65,7 +92,7 @@
   const wickX=p.x,wickY=p.y+p.width*(.65-p.below*.15);
   if(interactive()&&input.key){torch.targetX=wickX;torch.targetY=wickY;}
   torch.update(dt,state.reduced);
-  if(music){const target=state.phase==='READING'||state.phase==='NOTE_DROP'?C.audio.readingVolume:C.audio.musicVolume;music.volume+=(target-music.volume)*(1-Math.exp(-dt*3));}
+  if(music){const target=(!musicGain&&(!musicStarted||!soundEnabled))?0:state.phase==='READING'||state.phase==='NOTE_DROP'?C.audio.readingVolume:C.audio.musicVolume;music.volume+=(target-music.volume)*(1-Math.exp(-dt*3));}
   if(interactive()){
    // IDLE / LIGHTING: foreground is sharp, paper warms progressively at the wick.
    const near=input.active&&Math.hypot(torch.x-wickX,torch.y-wickY)<C.lighting.reach;
