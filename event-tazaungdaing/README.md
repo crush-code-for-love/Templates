@@ -6,7 +6,7 @@ The opening keeps the held heart lantern and torch in sharp focus, with small di
 
 ## Open and play
 
-Double-click `index.html` in this folder. Keep `css/` and `js/` beside it. Move the torch flame to the lantern's wick for about 2.5 seconds, or press and hold the lantern. Keyboard: Tab to the scene, then hold Space or Enter. The camera looks up from a fixed eye height as your lantern rises away. A second lantern travels forward from behind the viewer, passes overhead, and keeps its constant upward speed when the note detaches. At liftoff, the greeting “ပျော်ရွှင်စရာ တန်ဆောင်တိုင် ဖြစ်ပါစေ” and fireworks run for five seconds. The already-written love note detaches, sways down, turns from portrait to landscape in midair, and settles flat against the screen. Close it with the top-right × (or Escape), then scroll, swipe, or use Up/Down arrows to look between the crowd and sky. After closing, one additional I ♥ U formation rises at the ordinary lantern speed while the existing lanterns continue untouched. Long letters scroll inside the landscape paper.
+Double-click `index.html` in this folder. Keep `css/` and `js/` beside it. Grab the torch by its flame or handle, drag its flame to the wick, and hold for about 2.5 seconds. Hovering does not move the torch. The supplied golden hour recording begins at 1:57 as soon as the torch flame first touches the fuel; grabbing alone is silent, and later heat changes do not restart the song. Keyboard: Tab to the scene, then hold Space or Enter. The camera looks up from a fixed eye height as your lantern rises away. A second lantern travels forward from behind the viewer, passes overhead, and keeps its constant upward speed when the note detaches. At liftoff, the greeting “ပျော်ရွှင်စရာ တန်ဆောင်တိုင် ဖြစ်ပါစေ” and fireworks run for five seconds. The already-written love note detaches, sways down, turns from portrait to landscape in midair, and settles flat against the screen. Close it with the top-right × (or Escape), then scroll, swipe, or use Up/Down arrows to look between the crowd and sky. After closing, one additional I ♥ U formation rises at the ordinary lantern speed while the existing lanterns continue untouched. Long letters scroll inside the landscape paper.
 
 The Google Fonts stylesheet needs internet access for Noto Sans Myanmar. Without it, the browser uses Myanmar Text or another available system font. The scene itself runs locally; audio files are optional.
 
@@ -21,7 +21,7 @@ Edit `js/config.js`, save, and refresh the page:
 - `timings` controls lighting and opening hints. `camera.lookUpDuration` controls the look-up; `letterLantern.noteFallDuration` controls the paper flight. Values are seconds; use positive durations.
 - `world.count` controls the fixed population (120 normal / 60 lite, including the held and letter lanterns). `counts` controls stars and torch particles. Keep lite values no greater than normal values.
 - `camera` controls pitch in degrees, focal length, and fixed eye height. `world` controls depth, size, rise speed, sway, and wind drift. `focus` controls cached blur and focus transitions. `festival` controls the pagoda colors/position, haze, crowd sway, and light pulse. `letterLantern` controls its behind-viewer origin, continuous forward/rise speeds, note release time, thread, and note.
-- `celebration` controls the five-second greeting, spark counts, and synthesized firework volume.
+- `celebration` controls the five-second greeting, spark counts, and recorded firework volume.
 - `formation` controls the one-time I ♥ U group: depth, width, and height. It adds 48 lanterns (24 in lite mode), retires after leaving the view, and never replaces the existing festival population.
 - `explore` controls the unlocked camera range and wheel/swipe sensitivity after closing the note.
 
@@ -43,7 +43,7 @@ console.log(link.href);
 - `lantern.js`: one shared heart-shaped paper renderer, cached sharp/blurred sprites, progressive heat, and the separate letter lantern’s note.
 - `torch.js`: following torch, flickering flame, pooled embers, release fade.
 - `crowd.js`: bounded 3D lantern pool, depth sorting, continuous rise paths, and replacements below the current view.
-- `celebration.js`: pooled firework sparks and synthesized Web Audio booms.
+- `celebration.js`: pooled heart-shaped firework sparks and a real fireworks recording.
 - `letter.js`: HTML note flight, safe text creation, written paper flight and close control.
 - `css/style.css`: responsive canvas, paper texture, unfolding, typography and controls.
 - `assets/`: empty until you add optional audio.
@@ -62,7 +62,7 @@ Add your own licensed files, then set paths under `audio`, for example:
 audio: { enabled: false, match: 'assets/match.mp3', crackle: 'assets/crackle.mp3', wind: 'assets/wind.mp3' }
 ```
 
-The five-second fireworks have built-in synthesized sound, unlocked by the lighting click/touch/keyboard gesture. Sound starts enabled and can be muted with the Sound button. `match` plays once when lighting starts; crackle and wind loop in their respective phases. No files are required for the fireworks; optional tracks are only loaded when configured. Missing or blocked files turn audio off without interrupting the visual journey. The Sound toggle controls the synthesized fireworks and optional tracks.
+The five-second heart fireworks use a public-domain recording by Stephan from SoundBible. golden hour starts at 117 seconds on first torch-flame contact with the fuel and softens during the note; both pause when the tab is hidden. See assets/AUDIO-CREDITS.md for sources. Sound starts enabled and can be muted with the Sound button. `match` plays once when lighting starts; crackle and wind loop in their respective phases. The music and fireworks files are included locally; optional extra tracks are loaded only when configured. Missing or blocked files turn audio off without interrupting the visual journey. The Sound toggle controls music, the recorded fireworks, and optional tracks.
 
 ## Host it
 
@@ -83,3 +83,7 @@ JavaScript syntax and mocked DOM/canvas checks cover the phase sequence, 60/120 
 Latest checks also cover constant note-lantern velocity before/after detachment, five-second greeting/fireworks, sound mute cutoff, a ten-minute replenishment simulation, and close-to-explore controls. Browser visual and audible review remains outstanding.
 
 Latest animation checks cover the portrait-to-landscape quarter-turn and one-time formation flight on desktop, portrait mobile, and lite mode without growing the lantern pool.
+
+Interaction checks: pointer hover and off-torch clicks do not move the torch or start music; grabbing and dragging lights the wick; music begins at 117 seconds once, on first fuel contact; mute, hidden-tab pause/resume, and reset work in simulated mobile and desktop runs.
+
+GitHub update: MP3 files are intentionally omitted from this commit. Add assets/golden-hour.mp3 and assets/fireworks.mp3 separately to enable the configured audio.

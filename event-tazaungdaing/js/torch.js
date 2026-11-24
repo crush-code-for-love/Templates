@@ -3,6 +3,11 @@
  const app=window.LanternLetter,C=app.config;
  class Torch {
   constructor(scene){this.scene=scene;this.x=this.targetX=scene.width*C.torch.startX;this.y=this.targetY=scene.height*C.torch.startY;this.emission=0;this.cursor=0;this.particles=Array.from({length:C.counts.normal.particles},()=>({x:0,y:0,vx:0,vy:0,life:0,maxLife:1,size:1}));this.glow=app.makeGlow(C.colors.flame[1]);}
+  contains(x,y){
+   // A generous touch target follows the tilted handle as well as the flame.
+   const dx=x-this.x,dy=y-this.y,along=Math.max(0,Math.min(C.torch.stickLength,dx*Math.sin(.22)+dy*Math.cos(.22)));
+   return Math.hypot(dx-along*Math.sin(.22),dy-along*Math.cos(.22))<=C.torch.grabRadius;
+  }
   resize(){this.x=this.targetX=Math.min(this.scene.width,Math.max(0,this.targetX));this.y=this.targetY=Math.min(this.scene.height,Math.max(0,this.targetY));for(let i=0;i<this.particles.length;i++)this.particles[i].life=0;}
   // LIFTOFF: remember the release point in viewport fractions so resize is safe.
   drop(){this.dropping=true;this.dropTime=0;this.dropX=this.x/this.scene.width;this.dropY=this.y/this.scene.height;}

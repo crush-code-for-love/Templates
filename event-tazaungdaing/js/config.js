@@ -68,7 +68,7 @@ window.LanternLetter.config = {
   lighting: { reach: 35, holdSlop: 28, vibration: 35 }, // Pointer proximity/movement in pixels, catch vibration in milliseconds.
 
   torch: {
-    startX: .77, startY: .85, // Initial flame position as viewport fractions.
+    startX: .77, startY: .78, grabRadius: 30, // Initial flame position as viewport fractions.
     followSpeed: 18, flameSize: 32, stickLength: 90, glowSize: 160, // Follow rate and CSS pixel sizes.
     emberRate: 23, emberLife: 1.4, emberSpeed: 45, emberDrift: 16, // Per second, seconds, pixels/second.
     wood: '#69442e', woodHighlight: '#b18353'
@@ -81,15 +81,15 @@ window.LanternLetter.config = {
     backgroundDim: .25 // Dim the festival as focus returns to the falling note.
   },
   performance: { lowFps: 24, lowFpsSeconds: 2, manualLite: false },
-  audio: { enabled: false, match: '', crackle: '', wind: '' }, // Optional assets/ paths, added later.
+  audio: { enabled: true, match: '', crackle: '', wind: '', music: 'assets/golden-hour.mp3', musicStart: 117, musicVolume: .38, readingVolume: .18, fireworks: 'assets/fireworks.mp3' }, // Optional assets/ paths, added later.
   formation: { depth: 18, width: .78, height: .27 }, // One-time group depth and viewport dimensions; rise speed matches the festival average.
   explore: { maxPitch: 35, scrollSpeed: .045, dragSpeed: .09, smoothing: 8 }, // Degrees, degrees/pixel, follow rate after closing the letter.
   sharing: { maxNameLength: 80, maxMessageLength: 4000 }
 };
 
 // URL values remain plain strings. Display them only with textContent, never HTML.
-window.LanternLetter.config.strings.my.lightHint = 'မီးစာနားမှာ မီးတုတ်ကိုထားပါ၊ ဒါမှမဟုတ် မီးပုံးကို ဖိထားပါ။';
-window.LanternLetter.config.strings.en.lightHint = 'Bring the flame to the wick, or press and hold the lantern.';
+window.LanternLetter.config.strings.my.lightHint = 'မီးတုတ်ကို ဖိဆွဲပြီး မီးပုံးရဲ့မီးစာနားမှာ ခဏထားပေးပါ။';
+window.LanternLetter.config.strings.en.lightHint = 'Grab the torch and drag its flame to the wick.';
 window.LanternLetter.config.strings.my.keyboardHint = 'Space သို့မဟုတ် Enter ကို ဖိထားပြီး မီးထွန်းနိုင်ပါတယ်။';
 window.LanternLetter.config.strings.en.keyboardHint = 'Hold Space or Enter to light the lantern.';
 window.LanternLetter.config.strings.my.audioMissing = 'အသံဖိုင် မထည့်ရသေးပါ';

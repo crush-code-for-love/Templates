@@ -13,6 +13,22 @@
  greeting.textContent=C.celebration.text;
  let lookTarget=scene.pitch,dragY=null;
  const tracks={match:null,crackle:null,wind:null};let soundEnabled=true;
+ let music=null,musicStarted=false;
+ function prepareMusic(){
+  if(music)return;
+  const track=music=new Audio(C.audio.music);track.preload='auto';track.volume=C.audio.musicVolume;track.muted=true;
+  const seek=()=>{if(Number.isFinite(track.duration)&&track.duration<=C.audio.musicStart){sound.title='Music file is shorter than 1:57';return;}track.currentTime=C.audio.musicStart;};
+  track.addEventListener('loadedmetadata',seek,{once:true});
+  // Unlock silently during the grab for mobile browsers; no song is heard before the flame touches the fuel.
+  track.play().then(()=>{if(music===track&&!musicStarted){track.pause();seek();}}).catch(()=>{});
+ }
+ function startMusic(){
+  if(musicStarted)return;prepareMusic();musicStarted=true;
+  try{music.currentTime=C.audio.musicStart;}catch(error){/* Metadata callback performs the seek. */}
+  music.muted=!soundEnabled;music.play().catch(()=>{sound.title=strings.audioFailed;});
+ }
+ function resumeMusic(){if(musicStarted&&music&&!music.ended)music.play().catch(()=>{});}
+
  document.documentElement.lang=C.language;
  const style=document.documentElement.style;style.setProperty('--paper',C.colors.paper);style.setProperty('--ink',C.note.ink);style.setProperty('--accent',C.note.accent);style.setProperty('--unfold-time',C.note.unfoldTime+'s');
  canvas.setAttribute('role','application');canvas.setAttribute('tabindex','0');canvas.setAttribute('aria-label',strings.scene+'. '+strings.lightHint+'. '+strings.keyboardHint);
@@ -22,21 +38,21 @@
  function interactive(){return state.phase==='IDLE'||state.phase==='LIGHTING';}
  function enter(phase){state.phase=phase;state.phaseTime=0;}
  function activity(){inactive=0;hint.hidden=true;hint.classList.remove('visible');}
- function releaseInput(){input.id=null;input.active=input.hold=input.key=false;}
+ function releaseInput(){input.id=null;input.active=input.hold=input.key=false;canvas.style.cursor='default';}
  function stopAudio(){for(const key in tracks){if(tracks[key]){tracks[key].pause();tracks[key].currentTime=0;}}}
  function playAudio(key){
   if(!soundEnabled||!C.audio[key])return;
   if(!tracks[key]){tracks[key]=new Audio(C.audio[key]);tracks[key].loop=key!=='match';tracks[key].volume=.3;}
   tracks[key].play().catch(()=>{soundEnabled=false;stopAudio();sound.setAttribute('aria-pressed','false');sound.title=strings.audioFailed;});
  }
- sound.addEventListener('click',()=>{if(sound.disabled)return;soundEnabled=!soundEnabled;celebration.unlock();celebration.mute(!soundEnabled);sound.setAttribute('aria-pressed',String(soundEnabled));if(soundEnabled)playAudio(interactive()?'crackle':'wind');else stopAudio();});
+ sound.addEventListener('click',()=>{if(sound.disabled)return;soundEnabled=!soundEnabled;if(music)music.muted=!musicStarted||!soundEnabled;celebration.unlock();celebration.mute(!soundEnabled);sound.setAttribute('aria-pressed',String(soundEnabled));if(soundEnabled)playAudio(interactive()?'crackle':'wind');else stopAudio();});
  function setLite(enabled){C.performance.manualLite=enabled;renderer.setLite(enabled);slowTime=0;}
  function closeLetter(){
   letter.close();world.startFormations();enter('EXPLORE');lookTarget=scene.pitch;state.focus=1;state.dim=0;
   hint.hidden=true;canvas.focus({preventScroll:true});
  }
  function reset(){
-  releaseInput();stopAudio();letter.reset();celebration.reset();greeting.hidden=true;canvas.style.filter='';canvas.style.opacity='1';
+  releaseInput();stopAudio();if(music){music.pause();music.removeAttribute('src');music.load();music=null;}musicStarted=false;letter.reset();celebration.reset();greeting.hidden=true;canvas.style.filter='';canvas.style.opacity='1';
   scene.pitch=C.camera.startPitch*Math.PI/180;world=new app.Crowd(scene);torch=new app.Torch(scene);
   state.phase='IDLE';state.phaseTime=state.time=state.dim=0;state.focus=C.focus.idleSharpness;state.reduced=motion.matches;
   inactive=slowTime=lastTime=0;dragY=null;lookTarget=scene.pitch;hint.textContent=strings.lightHint;activity();controls.hidden=true;
@@ -47,13 +63,15 @@
   state.time+=dt;state.phaseTime+=dt;inactive+=dt;
   world.project();const p=world.hero.screen;
   const wickX=p.x,wickY=p.y+p.width*(.65-p.below*.15);
-  if(interactive()&&(input.hold||input.key)){torch.targetX=wickX;torch.targetY=wickY;}
+  if(interactive()&&input.key){torch.targetX=wickX;torch.targetY=wickY;}
   torch.update(dt,state.reduced);
+  if(music){const target=state.phase==='READING'||state.phase==='NOTE_DROP'?C.audio.readingVolume:C.audio.musicVolume;music.volume+=(target-music.volume)*(1-Math.exp(-dt*3));}
   if(interactive()){
    // IDLE / LIGHTING: foreground is sharp, paper warms progressively at the wick.
    const near=input.active&&Math.hypot(torch.x-wickX,torch.y-wickY)<C.lighting.reach;
    if(near&&state.phase==='IDLE'){enter('LIGHTING');playAudio('match');}
    world.hero.heat=Math.max(0,Math.min(1,world.hero.heat+dt*(near?1/C.timings.heat:-1/C.timings.heatDecay)));
+   if(near)startMusic();
    state.focus=C.focus.idleSharpness+world.hero.heat*.22;
    if(world.hero.heat===0&&state.phase==='LIGHTING')enter('IDLE');
    if(world.hero.heat>=1){
@@ -118,13 +136,24 @@
  for(const event of ['pointerup','pointercancel','lostpointercapture','blur'])canvas.addEventListener(event,()=>{dragY=null;});
  canvas.addEventListener('keydown',e=>{if(state.phase==='EXPLORE'&&(e.code==='ArrowUp'||e.code==='ArrowDown')){e.preventDefault();look(e.code==='ArrowUp'?3:-3);}});
  letter.card.addEventListener('keydown',e=>{if(e.code==='Escape'&&state.phase==='READING'){e.preventDefault();closeLetter();}});
- canvas.addEventListener('pointerdown',e=>{celebration.unlock();if(!interactive()||input.id!==null)return;input.id=e.pointerId;input.active=true;input.x=e.clientX;input.y=e.clientY;const p=world.hero.screen;input.hold=Math.abs(e.clientX-p.x)<p.width*.75&&Math.abs(e.clientY-p.y)<p.width;torch.targetX=e.clientX;torch.targetY=e.clientY;canvas.setPointerCapture(e.pointerId);canvas.focus({preventScroll:true});activity();});
- canvas.addEventListener('pointermove',e=>{if(!interactive()||input.id!==null&&input.id!==e.pointerId||e.pointerType!=='mouse'&&input.id===null)return;if(input.hold&&Math.hypot(e.clientX-input.x,e.clientY-input.y)>C.lighting.holdSlop)input.hold=false;input.active=true;torch.targetX=e.clientX;torch.targetY=e.clientY;activity();});
+ // Drag begins only on the torch. Pointer hover never moves or lights it.
+ canvas.addEventListener('pointerdown',e=>{
+  if(!interactive()||input.id!==null||!torch.contains(e.clientX,e.clientY))return;
+  celebration.unlock();prepareMusic();input.id=e.pointerId;input.active=true;
+  input.x=e.clientX-torch.x;input.y=e.clientY-torch.y;
+  canvas.style.cursor='grabbing';canvas.setPointerCapture(e.pointerId);canvas.focus({preventScroll:true});activity();
+ });
+ canvas.addEventListener('pointermove',e=>{
+  if(!interactive())return;
+  if(input.id===null){canvas.style.cursor=torch.contains(e.clientX,e.clientY)?'grab':'default';return;}
+  if(input.id!==e.pointerId)return;
+  torch.targetX=Math.max(0,Math.min(scene.width,e.clientX-input.x));torch.targetY=Math.max(0,Math.min(scene.height,e.clientY-input.y));activity();
+ });
  canvas.addEventListener('pointerup',e=>{if(input.id===e.pointerId)releaseInput();});canvas.addEventListener('pointercancel',releaseInput);canvas.addEventListener('lostpointercapture',releaseInput);canvas.addEventListener('pointerleave',()=>{if(input.id===null)releaseInput();});
- canvas.addEventListener('keydown',e=>{if(e.code==='Space'||e.code==='Enter'){celebration.unlock();e.preventDefault();if(interactive()){input.active=input.key=true;activity();}}});
+ canvas.addEventListener('keydown',e=>{if(e.code==='Space'||e.code==='Enter'){celebration.unlock();e.preventDefault();if(interactive()){prepareMusic();input.active=input.key=true;activity();}}});
  canvas.addEventListener('keyup',e=>{if(e.code==='Space'||e.code==='Enter')releaseInput();});canvas.addEventListener('blur',releaseInput);window.addEventListener('blur',releaseInput);
  window.addEventListener('resize',()=>{releaseInput();scene.resize();world.project();torch.resize();letter.fit();if(state.phase==='NOTE_DROP')letter.drop(Math.min(1,state.phaseTime/C.letterLantern.noteFallDuration),state.reduced);draw();});
- document.addEventListener('visibilitychange',()=>{cancelAnimationFrame(frameId);lastTime=slowTime=0;releaseInput();if(document.hidden){stopAudio();celebration.quiet();} else{if(celebration.elapsed>=0)celebration.mute(!soundEnabled);if(soundEnabled)playAudio(interactive()?'crackle':'wind');frameId=requestAnimationFrame(frame);}});
+ document.addEventListener('visibilitychange',()=>{cancelAnimationFrame(frameId);lastTime=slowTime=0;releaseInput();if(document.hidden){stopAudio();if(music)music.pause();celebration.quiet();} else{resumeMusic();if(celebration.elapsed>=0)celebration.mute(!soundEnabled);if(soundEnabled)playAudio(interactive()?'crackle':'wind');frameId=requestAnimationFrame(frame);}});
  motion.addEventListener('change',()=>{state.reduced=motion.matches;});
  app.celebration=celebration;app.scene=scene;app.world=world;app.renderer=renderer;app.state=state;app.torch=torch;app.lantern=world.hero;app.letter=letter;app.reset=reset;
  world.project();torch.update(0,state.reduced);draw();frameId=requestAnimationFrame(frame);
