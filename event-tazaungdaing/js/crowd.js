@@ -22,12 +22,15 @@
    // One additional, bounded group leaves every existing festival lantern untouched.
    if(this.formationGroups)return;
    // Every mark is a lantern rendered and depth-sorted by the shared renderer.
-   const lite=C.performance.manualLite,points=[];
+   const points=[],portrait=this.scene.width<this.scene.height;
+   // Keep all 48 outline points in lite mode: missing strokes make small letters illegible.
+   const layout=C.formation,width=this.scene.width*(portrait?layout.mobileWidth:layout.width);
+   const height=Math.min(this.scene.height*layout.height,this.scene.width*(portrait?layout.mobileHeight:.28));
    const add=(x,y)=>points.push({x,y});
-   const bar=lite?2:3,stem=lite?2:6;
+   const bar=3,stem=6;
    for(let j=0;j<bar;j++){const x=-.72-.18+j*.36/(bar-1);add(x,.5);add(x,-.5);}
    for(let j=0;j<stem;j++)add(-.72,.5-(j+1)/(stem+1));
-   const hearts=lite?10:20;
+   const hearts=20;
    // Sample the outline by distance, not angle: no stacked lanterns at either cusp.
    // Normalize the final outline to the same top/bottom as I and U.
    const outline=[],samples=400;let low=Infinity,high=-Infinity;
@@ -35,7 +38,7 @@
     const t=j/samples*Math.PI*2,x=.32*Math.pow(Math.sin(t),3),y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
     outline.push({x,y,d:0});low=Math.min(low,y);high=Math.max(high,y);
    }
-   const sx=this.scene.width*C.formation.width*.5,sy=Math.min(this.scene.height*C.formation.height,this.scene.width*.28);
+   const sx=width*.5,sy=height;
    let length=0;
    for(let j=0;j<outline.length;j++){
     const point=outline[j];point.y=(point.y-low)/(high-low)-.5;
@@ -49,13 +52,12 @@
    }
    const bottom=Math.min(...heartPoints.map(p=>p.y)),top=Math.max(...heartPoints.map(p=>p.y));
    for(const point of heartPoints)add(point.x,(point.y-bottom)/(top-bottom)-.5);
-   const sides=lite?2:5,curve=lite?4:6;
+   const sides=5,curve=6;
    for(let j=0;j<sides;j++){const y=.5-j*.65/sides;add(.52,y);add(.92,y);}
    for(let j=0;j<curve;j++){const t=j/(curve-1)*Math.PI;add(.72-.20*Math.cos(t),-.15-.35*Math.sin(t));}
    const group={items:[],points,speed:(C.world.riseSpeed[0]+C.world.riseSpeed[1])/2,finished:false};
    this.formationGroups=[group];
    const scene=this.scene,depth=C.formation.depth,pitch=scene.pitch;
-   const width=scene.width*C.formation.width,height=Math.min(scene.height*C.formation.height,scene.width*.28);
    const center=scene.height+height*.5+20;
    for(let j=0;j<points.length;j++){
     const point=points[j],vertical=(scene.cy-center+point.y*height)/scene.focal*depth;
@@ -64,7 +66,8 @@
     item.x=point.x*width*.5/scene.focal*depth;item.baseX=item.x;
     item.y=C.camera.eyeHeight+vertical*Math.cos(pitch)+depth*Math.sin(pitch);
     item.z=depth*Math.cos(pitch)-vertical*Math.sin(pitch);
-    item.size=Math.min(scene.width*.012,scene.height*.025)*depth/scene.focal;
+    // Mobile hearts stay readable, with space between adjacent points in each stroke.
+    item.size=Math.min(scene.width*(portrait?layout.mobileLanternWidth:.012),scene.height*.025)*depth/scene.focal;
     item.riseSpeed=group.speed;item.phase=0;
     group.items.push(item);this.items.push(item);this.sorted.push(item);scene.project(item);
    }

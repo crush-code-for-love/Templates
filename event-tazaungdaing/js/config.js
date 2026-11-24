@@ -82,7 +82,7 @@ window.LanternLetter.config = {
   },
   performance: { lowFps: 24, lowFpsSeconds: 2, manualLite: false },
   audio: { enabled: true, match: '', crackle: '', wind: '', music: 'assets/golden-hour.mp3', musicStart: 117, musicVolume: .38, readingVolume: .18, fireworks: 'assets/fireworks.mp3' }, // Optional assets/ paths, added later.
-  formation: { depth: 18, width: .78, height: .27 }, // One-time group depth and viewport dimensions; rise speed matches the festival average.
+  formation: { depth: 18, width: .78, height: .27, mobileWidth: .96, mobileHeight: .34, mobileLanternWidth: .021 }, // One-time group: depth in meters; layout and lantern widths as viewport fractions. Same festival rise speed.
   explore: { maxPitch: 35, scrollSpeed: .045, dragSpeed: .09, smoothing: 8 }, // Degrees, degrees/pixel, follow rate after closing the letter.
   sharing: { maxNameLength: 80, maxMessageLength: 4000 }
 };
